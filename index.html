@@ -26,20 +26,7 @@
 .timer-fill{height:100%;background:linear-gradient(90deg,#28a745,#d4a017,#dc3545);border-radius:20px;transition:width 1s linear}
 .attempt-badge{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:12px;padding:2px 10px;font-size:.72rem;color:#f5e6b0;white-space:nowrap}
 .attempt-badge strong{color:#d4a017;font-family:'Playfair Display',serif;font-size:.9rem}
-/* ── CHEAT OVERLAY ── */
-.cheat-overlay{display:none;position:fixed;inset:0;z-index:9999;background:rgba(139,26,26,.93);align-items:center;justify-content:center}
-.cheat-overlay.show{display:flex}
-.cheat-box{background:#fff;border-radius:8px;padding:28px 32px;max-width:400px;text-align:center;border:4px solid #dc3545}
-.cheat-icon{font-size:48px;margin-bottom:8px}
-.cheat-title{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:900;color:#8b1a1a;margin-bottom:6px}
-.cheat-msg{font-size:.88rem;color:#333;line-height:1.6;margin-bottom:12px}
-.cheat-count{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:900;color:#dc3545}
-.cheat-sub{font-size:.76rem;color:#666;margin-bottom:16px}
-.btn-cheat-ok{background:#dc3545;color:#fff;border:none;padding:10px 24px;border-radius:5px;font-size:.88rem;font-weight:700;cursor:pointer}
-/* ── CHEAT NOTICE ── */
-.cheat-notice{display:none;background:#fff0f0;border:2px solid #dc3545;border-radius:4px;padding:9px 16px;margin-bottom:12px;font-size:.81rem;color:#8b1a1a;line-height:1.55}
-.cheat-notice.show{display:block}
-.cheat-notice strong{display:block;font-family:'Playfair Display',serif;font-size:.88rem;margin-bottom:2px}
+/* ── CHEAT OVERLAY (removed – silent logging only) ── */
 /* ── TIME-UP OVERLAY ── */
 .timeup-overlay{display:none;position:fixed;inset:0;z-index:8000;background:rgba(26,58,92,.95);align-items:center;justify-content:center}
 .timeup-overlay.show{display:flex}
@@ -50,7 +37,7 @@
 /* ── PDF header ── */
 .pdf-info{display:none;background:#fffbe6;border:2px solid #ffc107;border-radius:4px;padding:11px 16px;margin-bottom:12px;font-size:.81rem;color:#5a4a10;line-height:1.65}
 .pdf-info strong{display:block;font-family:'Playfair Display',serif;font-size:.9rem;color:#8b1a1a;margin-bottom:3px}
-@media print{.timer-wrap,.cheat-overlay,.timeup-overlay,.prog-bar,.pg-btns,.sc-actions,.btn-grade,.btn-reset{display:none!important}.pdf-info{display:block!important}}
+@media print{.timer-wrap,.timeup-overlay,.prog-bar,.pg-btns,.sc-actions,.btn-grade,.btn-reset{display:none!important}.pdf-info{display:block!important}}
 
 /* PROGRESS BAR */
 .prog-bar{position:sticky;top:0;z-index:100;background:linear-gradient(90deg,var(--bd),var(--bm));border-bottom:3px solid var(--g);padding:7px 20px;display:flex;align-items:center;gap:14px;font-size:.78rem;color:var(--gl);box-shadow:0 2px 12px rgba(0,0,0,.35)}.prog-bar .pg-label{font-family:'Playfair Display',serif;font-weight:700;white-space:nowrap}.prog-track{flex:1;background:rgba(255,255,255,.15);border-radius:20px;height:8px;overflow:hidden}.prog-fill{height:100%;background:linear-gradient(90deg,var(--g),#ffe066);border-radius:20px;transition:width .4s ease;width:0%}.prog-count{white-space:nowrap;font-weight:700;color:var(--g)}.pg-btns{display:flex;gap:8px}.pg-btn{border:none;cursor:pointer;padding:5px 14px;border-radius:3px;font-size:.75rem;font-weight:700;transition:all .15s}.pg-btn.grade{background:var(--g);color:var(--bd)}.pg-btn.grade:hover{background:var(--gl)}.pg-btn.reset{background:transparent;color:var(--gl);border:1px solid rgba(255,255,255,.35)}.pg-btn.reset:hover{background:rgba(255,255,255,.12)}
@@ -102,17 +89,7 @@ footer{text-align:center;font-size:.72rem;color:var(--bl);padding:14px 0;border-
 
 <!-- STICKY PROGRESS BAR -->
 
-<!-- CHEAT OVERLAY -->
-<div class="cheat-overlay" id="cheatOverlay">
-  <div class="cheat-box">
-    <div class="cheat-icon">⚠️</div>
-    <div class="cheat-title">Phát hiện hành vi gian lận!</div>
-    <div class="cheat-msg">Hệ thống ghi nhận bạn <strong>rời khỏi trang thi</strong> (chuyển tab / cửa sổ / F5). Hành vi này được lưu vào kết quả PDF.</div>
-    <div class="cheat-count" id="cheatCount">1</div>
-    <div class="cheat-sub">lần vi phạm được ghi nhận</div>
-    <button class="btn-cheat-ok" onclick="document.getElementById('cheatOverlay').classList.remove('show')">Tôi hiểu – Quay lại làm bài</button>
-  </div>
-</div>
+<!-- Cheat detection: silent logging only (no popup) -->
 <!-- TIMEUP OVERLAY -->
 <div class="timeup-overlay" id="timeupOverlay">
   <div class="timeup-box">
@@ -145,11 +122,9 @@ footer{text-align:center;font-size:.72rem;color:var(--bl);padding:14px 0;border-
 <div class="wrap">
 
 
-<!-- CHEAT NOTICE -->
-<div class="cheat-notice" id="cheatNotice">
-  <strong>⚠️ Cảnh báo gian lận đã được ghi nhận</strong>
-  Phát hiện <span id="cheatTimes">0</span> lần rời khỏi trang thi. Thông tin này được ghi vào PDF kết quả.
-</div>
+<!-- Hidden counters for cheat logging (no UI shown) -->
+<span id="cheatCount" style="display:none">0</span>
+<span id="cheatTimes" style="display:none">0</span>
 <!-- PDF INFO (hiện khi in) -->
 <div class="pdf-info" id="pdfInfo"><strong>📋 THÔNG TIN BÀI LÀM</strong><span id="pdfInfoContent"></span></div>
 
@@ -932,8 +907,6 @@ function gradeAll() {
 function resetAll(){
   if(!confirm('Làm lại? Toàn bộ câu trả lời và bộ đếm vi phạm sẽ bị xóa.')) return;
   examDone=false; cheatCount=0; cheatLog=[]; examStartTime=new Date();
-  document.getElementById('cheatNotice').classList.remove('show');
-  document.getElementById('cheatTimes').textContent='0';
   secsLeft=TOTAL_SECS; clearInterval(timerInt);
   timerPaused=false;
   const toggleBtn=document.getElementById('timerToggleBtn');
@@ -1018,10 +991,9 @@ function triggerCheat(type) {
   const elapsed = Math.round((new Date()-examStartTime)/1000);
   const m = Math.floor(elapsed/60), s = elapsed%60;
   cheatLog.push(type + ' [' + t + ', sau ' + m + 'p' + s + 's]');
+  // Silent logging only – no popup shown to student
   document.getElementById('cheatCount').textContent = cheatCount;
   document.getElementById('cheatTimes').textContent = cheatCount;
-  document.getElementById('cheatNotice').classList.add('show');
-  document.getElementById('cheatOverlay').classList.add('show');
 }
 
 document.addEventListener('visibilitychange', () => {
@@ -1049,7 +1021,7 @@ window.addEventListener('beforeunload', (e) => {
       for(let i=0;i<rc;i++) cheatLog.push('Tải lại trang (F5/Ctrl+R)');
       document.getElementById('cheatCount').textContent = cheatCount;
       document.getElementById('cheatTimes').textContent = cheatCount;
-      document.getElementById('cheatNotice').classList.add('show');
+      // Silent logging – no popup/notice shown
       localStorage.removeItem('de12_reload_cheat');
     }
   } catch(err){}
