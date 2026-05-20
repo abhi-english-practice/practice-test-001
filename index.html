@@ -2,6 +2,7 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Đề Luyện Tập Số 12 – Chuyên Anh Phú Thọ 2026-2027</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
@@ -686,7 +687,7 @@ const MCQ_KEY = {
 // Word formation (text input): q36–q45
 const WF_KEY = {
   36:'appraisal', 37:'strikingly', 38:'approachable', 39:'misgivings', 40:'underscore',
-  41:'pointless', 42:'fruitful', 43:'unproductive', 44:'remaining', 45:'insensible'
+  41:'pointless', 42:'fruitful', 43:'unproductive', 44:'remaining', 45:'insensitive'
 };
 
 // Error correction (FIXED - full phrase where needed)
@@ -748,6 +749,12 @@ function updateProgress() {
 
 // ─── GRADING ──────────────────────────────────────────────────────────────────
 function gradeAll() {
+  // Enforce: must complete all questions before submitting
+  if(answered.size < TOTAL_GRADEABLE && !examDone) {
+    const remaining = TOTAL_GRADEABLE - answered.size;
+    const proceed = confirm(`⚠️ Bạn còn ${remaining} câu chưa làm!\n\nTiến độ hiện tại: ${answered.size} / ${TOTAL_GRADEABLE} câu.\n\nBấm OK để nộp bài ngay (câu bỏ trống tính sai), hoặc Hủy để tiếp tục làm bài.`);
+    if(!proceed) return;
+  }
   examDone=true; clearInterval(timerInt);
   let ok=0, no=0, bl=0, rows=[];
 
@@ -800,23 +807,34 @@ function gradeAll() {
     }
   }
 
-  // Error correction – grade only the corrected word (tf46-tf50)
+  // Error correction – grade line number + wrong word + corrected word (tf46-tf50)
   for(let i=46;i<=50;i++){
     const tfEl=document.getElementById('tf'+i);
+    const lnEl=document.getElementById('ln'+i);
+    const wrongEl=document.getElementById('wrong'+i);
     const fb=document.getElementById('fb'+i);
     fb.className='trans-fb'; fb.textContent='';
     const ans=ERR_KEY[i];
-    if(!tfEl||!tfEl.value.trim()){bl++;rows.push({i,correct:ans.correct,chosen:'–',ok:false});continue;}
-    const chosen=tfEl.value.trim().toLowerCase();
+    const tfVal=tfEl?tfEl.value.trim():'';
+    const lnVal=lnEl?lnEl.value.trim():'';
+    const wrongVal=wrongEl?wrongEl.value.trim():'';
+    if(!tfVal&&!lnVal&&!wrongVal){bl++;rows.push({i,correct:`Dòng ${ans.line}: ${ans.wrong} → ${ans.correct}`,chosen:'–',ok:false});continue;}
     tfEl.classList.remove('ok','no');
-    if(chosen===ans.correct.toLowerCase()){
+    const tfOk = tfVal.toLowerCase()===ans.correct.toLowerCase();
+    const lnOk = lnVal===String(ans.line);
+    const wrongOk = wrongVal.toLowerCase()===ans.wrong.toLowerCase();
+    if(tfOk && lnOk && wrongOk){
       ok++; tfEl.classList.add('ok');
       fb.className='trans-fb ok'; fb.innerHTML=`✓ Đúng! Dòng ${ans.line}: <strong>${ans.wrong}</strong> → <strong>${ans.correct}</strong>`;
-      rows.push({i,correct:`Dòng ${ans.line}: ${ans.wrong} → ${ans.correct}`,chosen:tfEl.value.trim(),ok:true});
+      rows.push({i,correct:`Dòng ${ans.line}: ${ans.wrong} → ${ans.correct}`,chosen:`Dòng ${lnVal}: ${wrongVal} → ${tfVal}`,ok:true});
     } else {
       no++; tfEl.classList.add('no');
-      fb.className='trans-fb no'; fb.innerHTML=`✗ Sai &nbsp;|&nbsp; Đáp án: Dòng ${ans.line}: <strong>${ans.wrong}</strong> → <strong>${ans.correct}</strong>`;
-      rows.push({i,correct:`Dòng ${ans.line}: ${ans.wrong} → ${ans.correct}`,chosen:tfEl.value.trim(),ok:false});
+      let hint='';
+      if(!lnOk) hint+=` Dòng đúng: ${ans.line}.`;
+      if(!wrongOk) hint+=` Từ sai đúng: "${ans.wrong}".`;
+      if(!tfOk) hint+=` Sửa thành: "${ans.correct}".`;
+      fb.className='trans-fb no'; fb.innerHTML=`✗ Sai &nbsp;|&nbsp; Đáp án: Dòng ${ans.line}: <strong>${ans.wrong}</strong> → <strong>${ans.correct}</strong>${hint?'<br><em>'+hint+'</em>':''}`;
+      rows.push({i,correct:`Dòng ${ans.line}: ${ans.wrong} → ${ans.correct}`,chosen:`Dòng ${lnVal||'?'}: ${wrongVal||'?'} → ${tfVal||'?'}`,ok:false});
     }
   }
 
@@ -863,7 +881,7 @@ function gradeAll() {
     if(!el||!el.value.trim()){bl++;rows.push({i,correct:ans.hint,chosen:'–',ok:false});continue;}
     const chosen=el.value.trim().toLowerCase();
     el.classList.remove('ok','no');
-    const matched=ans.keys.some(k=>chosen.includes(k.toLowerCase()));
+    const matched=ans.keys.every(k=>chosen.includes(k.toLowerCase()));
     if(matched){
       ok++; el.classList.add('ok');
       fb.className='trans-fb ok'; fb.innerHTML=`✓ Chấp nhận! &nbsp;Gợi ý đầy đủ: <em>${ans.hint}</em>`;
@@ -917,12 +935,17 @@ function resetAll(){
   document.getElementById('cheatNotice').classList.remove('show');
   document.getElementById('cheatTimes').textContent='0';
   secsLeft=TOTAL_SECS; clearInterval(timerInt);
+  timerPaused=false;
+  const toggleBtn=document.getElementById('timerToggleBtn');
+  const disp=document.getElementById('timerDisplay');
+  toggleBtn.textContent='⏸'; toggleBtn.classList.remove('paused');
+  disp.classList.remove('paused');
   timerInt=setInterval(tickTimer,1000);
   document.getElementById('timerDisplay').textContent=fmtTime(TOTAL_SECS);
   document.getElementById('timerFill').style.width='100%';
   document.getElementById('timerDisplay').classList.remove('twarn','tdanger');
-  attemptCount=parseInt(localStorage.getItem(ATTEMPT_KEY)||'0')+1;
-  localStorage.setItem(ATTEMPT_KEY,attemptCount);
+  attemptCount++;
+  try { localStorage.setItem(ATTEMPT_KEY, attemptCount); } catch(e){}
   document.getElementById('attemptNum').textContent=attemptCount;
   document.getElementById('pdfInfo').style.display='none';
   document.querySelectorAll('input[type=radio]').forEach(r=>r.checked=false);
@@ -975,8 +998,9 @@ function toggleAK(btn){
 // ATTEMPT COUNTER
 // ══════════════════════════════════════════════════════
 const ATTEMPT_KEY = 'de12_phu_tho_attempts';
+// Only increment on first true page load (not in-page reset)
 let attemptCount = parseInt(localStorage.getItem(ATTEMPT_KEY)||'0') + 1;
-localStorage.setItem(ATTEMPT_KEY, attemptCount);
+try { localStorage.setItem(ATTEMPT_KEY, attemptCount); } catch(e){}
 document.getElementById('attemptNum').textContent = attemptCount;
 
 // ══════════════════════════════════════════════════════
@@ -1003,30 +1027,32 @@ function triggerCheat(type) {
 document.addEventListener('visibilitychange', () => {
   if(document.hidden) triggerCheat('Chuyển tab / thu nhỏ cửa sổ');
 });
-window.addEventListener('blur', () => {
-  triggerCheat('Chuyển sang cửa sổ khác');
-});
+// window.blur listener removed – causes false positives (e.g. click on iframe, dev tools)
 
 // F5 / beforeunload
 window.addEventListener('beforeunload', (e) => {
   if(examDone) return;
   // Save pending cheat count so next load can read it
-  const cur = parseInt(localStorage.getItem('de12_reload_cheat')||'0');
-  localStorage.setItem('de12_reload_cheat', cur+1);
+  try {
+    const cur = parseInt(localStorage.getItem('de12_reload_cheat')||'0');
+    localStorage.setItem('de12_reload_cheat', cur+1);
+  } catch(err){}
   e.preventDefault(); e.returnValue=''; return '';
 });
 
 // Check reload cheat from previous page load
 (function(){
-  const rc = parseInt(localStorage.getItem('de12_reload_cheat')||'0');
-  if(rc > 0) {
-    cheatCount += rc;
-    for(let i=0;i<rc;i++) cheatLog.push('Tải lại trang (F5/Ctrl+R)');
-    document.getElementById('cheatCount').textContent = cheatCount;
-    document.getElementById('cheatTimes').textContent = cheatCount;
-    document.getElementById('cheatNotice').classList.add('show');
-    localStorage.removeItem('de12_reload_cheat');
-  }
+  try {
+    const rc = parseInt(localStorage.getItem('de12_reload_cheat')||'0');
+    if(rc > 0) {
+      cheatCount += rc;
+      for(let i=0;i<rc;i++) cheatLog.push('Tải lại trang (F5/Ctrl+R)');
+      document.getElementById('cheatCount').textContent = cheatCount;
+      document.getElementById('cheatTimes').textContent = cheatCount;
+      document.getElementById('cheatNotice').classList.add('show');
+      localStorage.removeItem('de12_reload_cheat');
+    }
+  } catch(err){}
 })();
 
 // ══════════════════════════════════════════════════════
